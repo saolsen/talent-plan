@@ -4,7 +4,7 @@ use crate::*;
 
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use labrpc::RpcFuture;
 
@@ -21,8 +21,9 @@ pub struct TimestampOracle {
 impl timestamp::Service for TimestampOracle {
     // example get_timestamp RPC handler.
     fn get_timestamp(&self, _: TimestampRequest) -> RpcFuture<TimestampResponse> {
-        // Your code here.
-        unimplemented!()
+        let time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+        let resp = TimestampResponse{timestamp: time.as_millis() as u64};
+        Box::new(futures::future::result(Ok(resp)))
     }
 }
 
