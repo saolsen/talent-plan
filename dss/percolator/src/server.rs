@@ -4,7 +4,7 @@ use crate::*;
 
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, Instant};
 
 use labrpc::RpcFuture;
 
@@ -13,15 +13,23 @@ use labrpc::RpcFuture;
 // Otherwise, the operation should back off.
 const TTL: u64 = Duration::from_millis(100).as_nanos() as u64;
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct TimestampOracle {
-    // You definitions here if needed.
+    origin: Instant
+}
+
+impl Default for TimestampOracle {
+    fn default() -> Self {
+        TimestampOracle {
+            origin: Instant::now()
+        }
+    }
 }
 
 impl timestamp::Service for TimestampOracle {
     // example get_timestamp RPC handler.
     fn get_timestamp(&self, _: TimestampRequest) -> RpcFuture<TimestampResponse> {
-        let time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+        let time = Instant::now().duration_since(self.origin);
         let resp = TimestampResponse{timestamp: time.as_millis() as u64};
         Box::new(futures::future::result(Ok(resp)))
     }
