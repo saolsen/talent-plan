@@ -37,12 +37,12 @@ impl Client {
 
     /// Gets a timestamp from a TSO.
     pub fn get_timestamp(&self) -> Result<u64> {
-        for attempt in 1..4 {
+        for attempt in 1..=RETRY_TIMES {
             let timestamp_response = self.tso_client.get_timestamp(&TimestampRequest{}).wait();
             if let Ok(response) = timestamp_response {
                 return Ok(response.timestamp)
             }
-            Delay::new(time::Duration::from_millis(attempt * BACKOFF_TIME_MS)).wait();
+            Delay::new(time::Duration::from_millis(attempt as u64 * BACKOFF_TIME_MS)).wait();
         }
         return Err(Error::Timeout)
     }
